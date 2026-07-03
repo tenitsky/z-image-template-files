@@ -8,6 +8,14 @@ echo "=== Starting Z-Image Template Setup ==="
 # Define the correct ComfyUI path for runpod/comfyui:cuda12.8
 COMFYUI_PATH="/workspace/runpod-slim/ComfyUI"
 
+# If ComfyUI is not yet in the workspace, copy the pre-built files first
+# This prevents the directory collision that blocks ComfyUI core files from loading
+if [ ! -d "$COMFYUI_PATH" ]; then
+  echo "First time setup: Copying baked ComfyUI to workspace..."
+  mkdir -p /workspace/runpod-slim
+  cp -r /opt/comfyui-baked "$COMFYUI_PATH"
+fi
+
 # 1. Move custom nodes to the official ComfyUI directory
 echo "Installing custom nodes..."
 mkdir -p "$COMFYUI_PATH/custom_nodes"
