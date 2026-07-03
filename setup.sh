@@ -8,10 +8,12 @@ echo "=== Starting Z-Image Template Setup ==="
 # Define the correct ComfyUI path for runpod/comfyui:cuda12.8
 COMFYUI_PATH="/workspace/runpod-slim/ComfyUI"
 
-# If ComfyUI is not yet in the workspace, copy the pre-built files first
-# This prevents the directory collision that blocks ComfyUI core files from loading
+# If ComfyUI is not yet in the workspace (or missing main.py), copy the pre-built files first
+# This self-healing check prevents directory collisions and fixes broken folders
 if [ ! -f "$COMFYUI_PATH/main.py" ]; then
   echo "First time setup: Copying baked ComfyUI to workspace..."
+  # Clean up any broken, empty directory from previous failed setups first
+  rm -rf "$COMFYUI_PATH"
   mkdir -p /workspace/runpod-slim
   cp -r /opt/comfyui-baked "$COMFYUI_PATH"
 fi
