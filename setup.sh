@@ -10,7 +10,7 @@ COMFYUI_PATH="/workspace/runpod-slim/ComfyUI"
 
 # If ComfyUI is not yet in the workspace, copy the pre-built files first
 # This prevents the directory collision that blocks ComfyUI core files from loading
-if [ ! -d "$COMFYUI_PATH" ]; then
+if [ ! -f "$COMFYUI_PATH/main.py" ]; then
   echo "First time setup: Copying baked ComfyUI to workspace..."
   mkdir -p /workspace/runpod-slim
   cp -r /opt/comfyui-baked "$COMFYUI_PATH"
