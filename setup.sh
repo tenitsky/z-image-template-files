@@ -32,6 +32,7 @@ echo "Preparing model directories..."
 mkdir -p "$COMFYUI_PATH/models/text_encoders"
 mkdir -p "$COMFYUI_PATH/models/diffusion_models"
 mkdir -p "$COMFYUI_PATH/models/vae"
+mkdir -p "$COMFYUI_PATH/models/loras"
 
 # 4. Check and download Text Encoder (Qwen 3 4B)
 if [ ! -f "$COMFYUI_PATH/models/text_encoders/qwen_3_4b.safetensors" ]; then
@@ -57,10 +58,35 @@ else
   echo "VAE already exists, skipping."
 fi
 
-# 7. Clean up the temporary git folder
+# 7. Install LoRA files from the repo's lora/ folder
+echo "Installing LoRA files..."
+if [ -d /tmp/temp_repo/lora ]; then
+  for f in /tmp/temp_repo/lora/*.safetensors; do
+    [ -e "$f" ] || continue
+    fname=$(basename "$f")
+    dest="$COMFYUI_PATH/models/loras/$fname"
+    if [ -f "$dest" ]; then
+      echo "LoRA $fname already exists, skipping."
+      continue
+    fi
+    # If the file is under 1MB it's likely a Git LFS pointer, not the real model
+    size=$(stat -c%s "$f")
+    if [ "$size" -lt 1000000 ]; then
+      echo "LoRA $fname looks like an LFS pointer, downloading real file..."
+      wget -q --show-progress -O "$dest" "https://media.githubusercontent.com/media/tenitsky/z-image-template-files/main/lora/$fname"
+    else
+      echo "Copying LoRA $fname..."
+      cp "$f" "$dest"
+    fi
+  done
+else
+  echo "No lora directory found in repo, skipping."
+fi
+
+# 8. Clean up the temporary git folder
 echo "Cleaning up temp files..."
 rm -rf /tmp/temp_repo
 
-# 8. Start ComfyUI using the official RunPod entrypoint
+# 9. Start ComfyUI using the official RunPod entrypoint
 echo "Setup complete! Handing over to start script..."
 exec /start.sh
